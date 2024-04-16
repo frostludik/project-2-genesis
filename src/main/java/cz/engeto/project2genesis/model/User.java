@@ -1,5 +1,6 @@
 package cz.engeto.project2genesis.model;
 
+import cz.engeto.project2genesis.util.ValidationUtils;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import java.util.UUID;
@@ -13,6 +14,7 @@ public class User {
     private UUID uuid;
 
     public User(String name, String surname, String personID, UUID uuid) {
+        ValidationUtils.validatePersonID(personID);
         this.name = name;
         this.surname = surname;
         this.personID = personID;
