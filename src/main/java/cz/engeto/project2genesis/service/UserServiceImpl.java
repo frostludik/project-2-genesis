@@ -52,6 +52,13 @@ public class UserServiceImpl implements UserService {
             UUID.fromString(rs.getString("uuid"))
     );
 
+    private RowMapper<User> simpleRowMapper = (rs, rowNum) -> new User(
+            rs.getLong("ID"),
+            rs.getString("name"),
+            rs.getString("surname")
+    );
+
+
     private boolean personIDExists(String personID) {
         String sql = "SELECT COUNT(*) FROM users WHERE personID = ?";
         Integer count = jdbcTemplate.queryForObject(sql, new Object[]{personID}, Integer.class);
@@ -96,8 +103,9 @@ public class UserServiceImpl implements UserService {
         try {
             String sql = detail
                     ? "SELECT * FROM users WHERE id = ?"
-                    : "SELECT id, name, surname, personID, uuid FROM users WHERE id = ?";
-            return jdbcTemplate.queryForObject(sql, new Object[]{id}, rowMapper);
+                    : "SELECT id, name, surname FROM users WHERE id = ?";
+            RowMapper<User> selectedMapper = detail ? rowMapper : simpleRowMapper;
+            return jdbcTemplate.queryForObject(sql, new Object[]{id}, selectedMapper);
         } catch (EmptyResultDataAccessException ex) {
             throw new UserException("User not found with id: " + id, HttpStatus.NOT_FOUND);
         }
@@ -107,8 +115,9 @@ public class UserServiceImpl implements UserService {
     public List<User> getAllUsers(boolean detail) {
         String sql = detail
                 ? "SELECT * FROM users"
-                : "SELECT name, surname, personID, uuid FROM users";
-        return jdbcTemplate.query(sql, rowMapper);
+                : "SELECT id, name, surname, personID, uuid FROM users";
+        RowMapper<User> selectedMapper = detail ? rowMapper : simpleRowMapper;
+        return jdbcTemplate.query(sql, selectedMapper);
     }
 
     @Override
