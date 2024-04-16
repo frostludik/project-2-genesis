@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface UserService {
     User createUser(User user) throws IOException;
-    User getUserById(String personID, boolean detail);
+    User getUserById(Long id, boolean detail);
     List<User> getAllUsers(boolean detail);
-    User updateUser(String personID, User user);
-    void deleteUserById(String personID);
+    User updateUser(Long id, User user);
+    void deleteUserById(Long id);
 }
