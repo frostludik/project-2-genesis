@@ -2,16 +2,23 @@ package cz.engeto.project2genesis.service;
 
 import cz.engeto.project2genesis.model.User;
 import cz.engeto.project2genesis.util.Settings;
+import cz.engeto.project2genesis.util.UserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,11 +40,12 @@ public class UserServiceImpl implements UserService {
             List<String> personIds = reader.lines().toList();
             return personIds.contains(personID);
         } catch (IOException e) {
-            throw new IOException("Failed to access person ID resource", e);
+            throw new UserException("Failed to access person ID resource.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     private RowMapper<User> rowMapper = (rs, rowNum) -> new User(
+            rs.getLong("ID"),
             rs.getString("name"),
             rs.getString("surname"),
             rs.getString("personID"),
@@ -50,50 +58,77 @@ public class UserServiceImpl implements UserService {
         return count != null && count > 0;
     }
 
+    private boolean idExists(Long id) {
+        String sql = "SELECT COUNT(*) FROM users WHERE ID = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{id}, Integer.class);
+        return count != null && count > 0;
+    }
+
     @Override
     public User createUser(User user) throws IOException {
         if (!isValidPersonID(user.getPersonID())) {
-            throw new IllegalStateException("Invalid or unavailable Person ID.");
+            throw new UserException("Invalid or unavailable Person ID.", HttpStatus.BAD_REQUEST);
         }
 
         if (personIDExists(user.getPersonID())) {
-            throw new IllegalStateException("Person ID is already assigned to a different user.");
+            throw new UserException("Person ID is already assigned to a different user.", HttpStatus.CONFLICT);
         }
 
         UUID uuid = UUID.randomUUID();
         user.setUuid(uuid);
 
         String sql = "INSERT INTO users (name, surname, personID, uuid) VALUES (?, ?, ?, ?)";
-        jdbcTemplate.update(sql, user.getName(), user.getSurname(), user.getPersonID(), uuid.toString());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getSurname());
+            ps.setString(3, user.getPersonID());
+            ps.setString(4, uuid.toString());
+            return ps;
+        }, keyHolder);
+        user.setId(keyHolder.getKey().longValue());  // Set the generated ID to the user object
         return user;
     }
 
     @Override
-    public User getUserById(String personID, boolean detail) {
-        String sql = detail
-                ? "SELECT * FROM users WHERE personID = ?"
-                : "SELECT name, surname FROM users WHERE personID = ?";
-        return jdbcTemplate.queryForObject(sql, new Object[]{personID}, rowMapper);
+    public User getUserById(Long id, boolean detail) {
+        try {
+            String sql = detail
+                    ? "SELECT * FROM users WHERE id = ?"
+                    : "SELECT id, name, surname, personID, uuid FROM users WHERE id = ?";
+            return jdbcTemplate.queryForObject(sql, new Object[]{id}, rowMapper);
+        } catch (EmptyResultDataAccessException ex) {
+            throw new UserException("User not found with id: " + id, HttpStatus.NOT_FOUND);
+        }
     }
 
     @Override
     public List<User> getAllUsers(boolean detail) {
         String sql = detail
                 ? "SELECT * FROM users"
-                : "SELECT name, surname, personID FROM users";
+                : "SELECT name, surname, personID, uuid FROM users";
         return jdbcTemplate.query(sql, rowMapper);
     }
 
     @Override
-    public User updateUser(String personID, User user) {
-        String sql = "UPDATE users SET name = ?, surname = ? WHERE personID = ?";
-        jdbcTemplate.update(sql, user.getName(), user.getSurname(), personID);
+    public User updateUser(Long id, User user) {
+        if (!idExists(id)) {
+            throw new UserException("User not found with id: " + id, HttpStatus.NOT_FOUND);
+        }
+
+        String sql = "UPDATE users SET name = ?, surname = ? WHERE id = ?";
+        jdbcTemplate.update(sql, user.getName(), user.getSurname(), id);
         return user;
     }
 
     @Override
-    public void deleteUserById(String personID) {
-        String sql = "DELETE FROM users WHERE personID = ?";
-        jdbcTemplate.update(sql, personID);
+    public void deleteUserById(Long id) {
+        if (!idExists(id)) {
+            throw new UserException("User not found with id: " + id, HttpStatus.NOT_FOUND);
+        }
+
+        String sql = "DELETE FROM users WHERE id = ?";
+        jdbcTemplate.update(sql, id);
     }
 }
