@@ -2,6 +2,8 @@ package cz.engeto.project2genesis.controller;
 
 import cz.engeto.project2genesis.model.User;
 import cz.engeto.project2genesis.service.UserService;
+import cz.engeto.project2genesis.util.Settings;
+import cz.engeto.project2genesis.util.UserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,68 +19,66 @@ import java.util.NoSuchElementException;
 public class UserController {
 
     private final UserService userService;
+    private final Settings settings;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, Settings settings) {
         this.userService = userService;
+        this.settings = settings;
     }
-
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers(@RequestParam(defaultValue = "false") boolean detail) {
-        return ResponseEntity.ok(userService.getAllUsers(detail));
+        List<User> users = userService.getAllUsers(detail);
+        return ResponseEntity.ok(users);
     }
 
-
     @GetMapping("/user/{id}")
-    public ResponseEntity<User> getUser(@PathVariable String id, @RequestParam(defaultValue = "false") boolean detail) {
+    public ResponseEntity<?> getUserById(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean detail) {
         try {
             User user = userService.getUserById(id, detail);
             return ResponseEntity.ok(user);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
+        } catch (UserException e) {
+            return ResponseEntity.status(e.getStatus()).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error");
         }
     }
-
 
     @PostMapping("/user")
     public ResponseEntity<?> createUser(@RequestBody User user) {
         try {
             User createdUser = userService.createUser(user);
-            return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (UserException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to access required resources.");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create user due to internal server error.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(settings.USER_NOT_CREATED);
         }
     }
 
-
     @PutMapping("/user/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable String id, @RequestBody User user) {
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User user) {
         try {
             User updatedUser = userService.updateUser(id, user);
             return ResponseEntity.ok(updatedUser);
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(settings.USER_NOT_FOUND + id);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update user due to internal server error.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(settings.USER_NOT_UPDATED);
         }
     }
 
-
     @DeleteMapping("/user/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
             userService.deleteUserById(id);
-            return ResponseEntity.ok().build();
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(settings.USER_DELETED);
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(settings.USER_NOT_FOUND + id);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete user due to internal server error.");
         }
     }
 }
