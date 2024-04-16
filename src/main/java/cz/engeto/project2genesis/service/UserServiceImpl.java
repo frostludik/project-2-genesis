@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -53,7 +52,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(User user) throws IOException {
-        // Check if the Person ID is valid and not used already
         if (!isValidPersonID(user.getPersonID())) {
             throw new IllegalStateException("Invalid or unavailable Person ID.");
         }
