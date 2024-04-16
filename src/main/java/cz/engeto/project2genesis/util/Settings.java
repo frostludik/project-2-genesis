@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Settings {
+
     @Autowired
     private ResourceLoader resourceLoader;
 
@@ -19,6 +20,7 @@ public class Settings {
     public static final String USER_NOT_CREATED = "User was not created.";
     public static final String USER_NOT_FOUND = "Cannot find User with id = ";
     public static final String USER_UPDATED = "User updated successfully.";
+    public static final String USER_NOT_UPDATED = "User was not updated.";
     public static final String USER_DELETED = "User deleted successfully.";
 
 }
