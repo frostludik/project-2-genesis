@@ -1,10 +1,12 @@
-# Project 2 - Genesis - registration system
+#Project 2 - Genesis - registration system
+
 
 2nd project for Engeto Java academy
 
 This JAVA code represents registration system with REST API.
 
-
+<br />
+<br />
 
 
 >**Project content:**
