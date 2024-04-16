@@ -24,6 +24,6 @@ $~$
 >## Other instructions:
 >- Export from DBeaver (MySQL) database is located in projectFolder/externalResources
 >- Export from Postman with REST requests is located in projectFolder/externalResources
->- Database "project2genesis" is just created, with table "users" and set its properties
->- To fill database with records for testing used prepared POST requests from Postman 
+>- Database "project2genesis" is empty, only created, with table "users" and with its properties set
+>- To fill database with records for testing use four prepared POST requests from Postman 
 
