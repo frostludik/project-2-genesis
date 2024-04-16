@@ -1,6 +1,9 @@
 package cz.engeto.project2genesis.model;
 
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+
 import java.util.UUID;
+
 
 public class User {
 
@@ -47,4 +50,15 @@ public class User {
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                ", personID='" + personID + '\'' +
+                ", uuid=" + uuid +
+                '}';
+    }
+
 }
