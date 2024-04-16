@@ -1,25 +1,35 @@
 package cz.engeto.project2genesis.model;
 
 import cz.engeto.project2genesis.util.ValidationUtils;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import java.util.UUID;
 
 
 public class User {
-
+    private long id;
     private String name;
     private String surname;
     private String personID;
     private UUID uuid;
 
-    public User(String name, String surname, String personID, UUID uuid) {
+    public User(long id, String name, String surname, String personID, UUID uuid) {
         ValidationUtils.validatePersonID(personID);
+        this.id = id;
         this.name = name;
         this.surname = surname;
         this.personID = personID;
         this.uuid = uuid;
     }
+
+    public User(long id, String name, String surname) {
+        this.id = id;
+        this.name = name;
+        this.surname = surname;
+    }
+
+    public long getId() { return id;}
+
+    public void setId(Long id) { this.id = id;}
 
     public String getName() {
         return name;
