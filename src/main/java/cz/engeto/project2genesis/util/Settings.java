@@ -1,17 +1,17 @@
 package cz.engeto.project2genesis.util;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Component
 public class Settings {
-    @Value("${person.id.file.path:dataPersonId.txt}")
-    private String personIdFilePath;
+    @Autowired
+    private ResourceLoader resourceLoader;
 
-    public Path getPersonIdFilePath() {
-        return Paths.get(personIdFilePath);
+    public Resource getPersonIdResource() {
+        return resourceLoader.getResource("classpath:dataPersonId.txt");
     }
 }
