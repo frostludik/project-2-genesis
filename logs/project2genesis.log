@@ -1,0 +1,4 @@
+2024-04-17 16:31:23 [main] INFO  c.e.p.Project2GenesisApplication - Starting Project2GenesisApplication using Java 21.0.1 with PID 14572 (C:\JAVA\Akademie\Project_2_Registracni_system\Projekt_2_v1\project-2-genesis\target\classes started by LuděkMráz in C:\JAVA\Akademie\Project_2_Registracni_system\Projekt_2_v1\project-2-genesis)
+2024-04-17 16:31:23 [main] DEBUG c.e.p.Project2GenesisApplication - Running with Spring Boot v3.2.4, Spring v6.1.5
+2024-04-17 16:31:23 [main] INFO  c.e.p.Project2GenesisApplication - No active profile set, falling back to 1 default profile: "default"
+2024-04-17 16:31:25 [main] INFO  c.e.p.Project2GenesisApplication - Started Project2GenesisApplication in 2.785 seconds (process running for 3.52)
