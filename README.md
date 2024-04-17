@@ -28,5 +28,5 @@ This JAVA code represents registration system with REST API.
 >  - To fill database with records for testing use four prepared POST requests from Postman 
 >- **Log**
 >  - Log is outputted to console and to file as well
->  - Log file is located in project-2-genesis/logs folder
+>  - Log file will be located in project-2-genesis/logs folder
 
