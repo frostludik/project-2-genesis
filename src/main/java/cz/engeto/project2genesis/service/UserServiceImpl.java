@@ -12,6 +12,8 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,10 +24,12 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
 
+
 @Service
 public class UserServiceImpl implements UserService {
     private final JdbcTemplate jdbcTemplate;
     private final Settings settings;
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
     public UserServiceImpl(JdbcTemplate jdbcTemplate, Settings settings) {
@@ -34,12 +38,16 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean isValidPersonID(String personID) throws IOException {
+        logger.debug("Checking validity of Person ID: {}", personID);
         Resource resource = settings.getPersonIdResource();
         try (InputStream inputStream = resource.getInputStream();
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             List<String> personIds = reader.lines().toList();
-            return personIds.contains(personID);
+            boolean isValid = personIds.contains(personID);
+            logger.debug("Person ID {} is valid: {}", personID, isValid);
+            return isValid;
         } catch (IOException e) {
+            logger.error("Failed to access person ID resource", e);
             throw new UserException("Failed to access person ID resource.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -60,24 +68,33 @@ public class UserServiceImpl implements UserService {
 
 
     private boolean personIDExists(String personID) {
+        logger.debug("Checking if Person ID exists in DB: {}", personID);
         String sql = "SELECT COUNT(*) FROM users WHERE personID = ?";
         Integer count = jdbcTemplate.queryForObject(sql, new Object[]{personID}, Integer.class);
-        return count != null && count > 0;
+        boolean exists = count != null && count > 0;
+        logger.debug("Person ID {} exists in DB: {}", personID, exists);
+        return exists;
     }
 
     private boolean idExists(Long id) {
+        logger.debug("Checking if User ID exists: {}", id);
         String sql = "SELECT COUNT(*) FROM users WHERE ID = ?";
         Integer count = jdbcTemplate.queryForObject(sql, new Object[]{id}, Integer.class);
-        return count != null && count > 0;
+        boolean exists = count != null && count > 0;
+        logger.debug("User ID {} exists: {}", id, exists);
+        return exists;
     }
 
     @Override
     public User createUser(User user) throws IOException {
+        logger.info("Creating user: {}", user);
         if (!isValidPersonID(user.getPersonID())) {
+            logger.warn("Invalid or unavailable Person ID for user: {}", user);
             throw new UserException("Invalid or unavailable Person ID.", HttpStatus.BAD_REQUEST);
         }
 
         if (personIDExists(user.getPersonID())) {
+            logger.warn("Attempt to assign already existing Person ID to a different user: {}", user);
             throw new UserException("Person ID is already assigned to a different user.", HttpStatus.CONFLICT);
         }
 
@@ -95,11 +112,13 @@ public class UserServiceImpl implements UserService {
             return ps;
         }, keyHolder);
         user.setId(keyHolder.getKey().longValue());
+        logger.info("User created with ID: {}", user.getId());
         return user;
     }
 
     @Override
     public User getUserById(Long id, boolean detail) {
+        logger.info("Retrieving user by ID: {}", id);
         try {
             String sql = detail
                     ? "SELECT * FROM users WHERE id = ?"
@@ -107,12 +126,15 @@ public class UserServiceImpl implements UserService {
             RowMapper<User> selectedMapper = detail ? rowMapper : simpleRowMapper;
             return jdbcTemplate.queryForObject(sql, new Object[]{id}, selectedMapper);
         } catch (EmptyResultDataAccessException ex) {
+            logger.error("User with ID {} not found", id, ex);
             throw new UserException("User with id: " + id + " not found!", HttpStatus.NOT_FOUND);
         }
     }
 
+
     @Override
     public List<User> getAllUsers(boolean detail) {
+        logger.info("Retrieving all users, detailed: {}", detail);
         String sql = detail
                 ? "SELECT * FROM users"
                 : "SELECT id, name, surname, personID, uuid FROM users";
@@ -122,23 +144,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(User user) {
+        logger.info("Updating user: {}", user);
         Long id = user.getId();
         if (!idExists(id)) {
+            logger.warn("Attempt to update non-existing user ID: {}", id);
             throw new UserException("User with id: " + id + " not found!", HttpStatus.NOT_FOUND);
         }
 
         String sql = "UPDATE users SET name = ?, surname = ? WHERE id = ?";
         jdbcTemplate.update(sql, user.getName(), user.getSurname(), id);
+        logger.info("User updated: {}", user);
         return user;
     }
 
     @Override
     public void deleteUserById(Long id) {
+        logger.info("Deleting user ID: {}", id);
         if (!idExists(id)) {
+            logger.error("Attempt to delete non-existing user ID: {}", id);
             throw new UserException("User with id: " + id + " not found!", HttpStatus.NOT_FOUND);
         }
 
         String sql = "DELETE FROM users WHERE id = ?";
         jdbcTemplate.update(sql, id);
+        logger.info("User deleted: {}", id);
     }
 }
