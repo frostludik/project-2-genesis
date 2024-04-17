@@ -18,7 +18,7 @@ public class Settings {
 
 
     public static final String USER_NOT_CREATED = "User was not created.";
-    public static final String USER_NOT_FOUND = "Cannot find User. ID = ";
+    public static final String USER_NOT_FOUND = "Cannot find User, ID ";
     public static final String USER_NOT_UPDATED = "User was not updated.";
     public static final String USER_DELETED = "User deleted successfully.";
 
