@@ -9,6 +9,6 @@ public interface UserService {
     User createUser(User user) throws IOException;
     User getUserById(Long id, boolean detail);
     List<User> getAllUsers(boolean detail);
-    User updateUser(Long id, User user);
+    User updateUser(User user);
     void deleteUserById(Long id);
 }
