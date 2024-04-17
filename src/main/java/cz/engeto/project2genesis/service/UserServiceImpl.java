@@ -3,6 +3,7 @@ package cz.engeto.project2genesis.service;
 import cz.engeto.project2genesis.model.User;
 import cz.engeto.project2genesis.util.Settings;
 import cz.engeto.project2genesis.util.UserException;
+import cz.engeto.project2genesis.util.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -39,6 +40,14 @@ public class UserServiceImpl implements UserService {
 
     private boolean isValidPersonID(String personID) throws IOException {
         logger.debug("Checking validity of Person ID: {}", personID);
+        try {
+            ValidationUtils.validatePersonID(personID);
+            logger.debug("Person ID {} passed initial validation checks.", personID);
+        } catch (IllegalArgumentException e) {
+            logger.error("Validation error for Person ID {}: {}", personID, e.getMessage());
+            throw e;
+        }
+
         Resource resource = settings.getPersonIdResource();
         try (InputStream inputStream = resource.getInputStream();
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
@@ -88,6 +97,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public User createUser(User user) throws IOException {
         logger.info("Creating user: {}", user);
+        try {
+            ValidationUtils.validatePersonID(user.getPersonID());
+        } catch (IllegalArgumentException e) {
+            logger.error("Validation error for personID: {}", user.getPersonID(), e);
+            throw new UserException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
         if (!isValidPersonID(user.getPersonID())) {
             logger.warn("Invalid or unavailable Person ID for user: {}", user);
             throw new UserException("Invalid or unavailable Person ID.", HttpStatus.BAD_REQUEST);

@@ -64,6 +64,10 @@ public class UserController {
             logger.warn("Attempt to create user with invalid or empty name");
             return ResponseEntity.badRequest().body("Name is required and cannot be empty.");
         }
+        if (user.getPersonID() == null || user.getPersonID().trim().isEmpty()) {
+            logger.warn("Attempt to create user with invalid or empty person ID");
+            return ResponseEntity.badRequest().body("Person ID is required and cannot be empty.");
+        }
         try {
             User createdUser = userService.createUser(user);
             logger.info("User created with ID: {}", createdUser.getId());
