@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 
 @RestController
@@ -19,12 +18,10 @@ import java.util.NoSuchElementException;
 public class UserController {
 
     private final UserService userService;
-    private final Settings settings;
 
     @Autowired
     public UserController(UserService userService, Settings settings) {
         this.userService = userService;
-        this.settings = settings;
     }
 
     @GetMapping("/users")
@@ -48,25 +45,34 @@ public class UserController {
 
     @PostMapping("/user")
     public ResponseEntity<?> createUser(@RequestBody User user) {
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Name is required and cannot be empty.");
+        }
         try {
             User createdUser = userService.createUser(user);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
         } catch (UserException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(settings.USER_NOT_CREATED);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Settings.USER_NOT_CREATED);
         }
     }
 
-    @PutMapping("/user/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User user) {
+    @PutMapping("/user")
+    public ResponseEntity<?> updateUser(@RequestBody User user) {
+        if (user.getId() == 0) {
+            return ResponseEntity.badRequest().body("User ID must be provided.");
+        }
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Name is required and cannot be empty.");
+        }
         try {
-            User updatedUser = userService.updateUser(id, user);
+            User updatedUser = userService.updateUser(user);
             return ResponseEntity.ok(updatedUser);
         } catch (UserException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(settings.USER_NOT_FOUND + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Settings.USER_NOT_FOUND + user.getId());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(settings.USER_NOT_UPDATED);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Settings.USER_NOT_UPDATED);
         }
     }
 
@@ -74,9 +80,9 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
             userService.deleteUserById(id);
-            return ResponseEntity.ok(settings.USER_DELETED);
+            return ResponseEntity.ok(Settings.USER_DELETED);
         } catch (UserException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(settings.USER_NOT_FOUND + id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Settings.USER_NOT_FOUND + id);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete user due to internal server error.");
         }
