@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
             RowMapper<User> selectedMapper = detail ? rowMapper : simpleRowMapper;
             return jdbcTemplate.queryForObject(sql, new Object[]{id}, selectedMapper);
         } catch (EmptyResultDataAccessException ex) {
-            throw new UserException("User not found with id: " + id, HttpStatus.NOT_FOUND);
+            throw new UserException("User with id: " + id + " not found!", HttpStatus.NOT_FOUND);
         }
     }
 
@@ -124,7 +124,7 @@ public class UserServiceImpl implements UserService {
     public User updateUser(User user) {
         Long id = user.getId();
         if (!idExists(id)) {
-            throw new UserException("User not found with id: " + id, HttpStatus.NOT_FOUND);
+            throw new UserException("User with id: " + id + " not found!", HttpStatus.NOT_FOUND);
         }
 
         String sql = "UPDATE users SET name = ?, surname = ? WHERE id = ?";
@@ -135,7 +135,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long id) {
         if (!idExists(id)) {
-            throw new UserException("User not found with id: " + id, HttpStatus.NOT_FOUND);
+            throw new UserException("User with id: " + id + " not found!", HttpStatus.NOT_FOUND);
         }
 
         String sql = "DELETE FROM users WHERE id = ?";
