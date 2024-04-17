@@ -13,7 +13,6 @@ public class User {
     private UUID uuid;
 
     public User(long id, String name, String surname, String personID, UUID uuid) {
-        ValidationUtils.validatePersonID(personID);
         this.id = id;
         this.name = name;
         this.surname = surname;
