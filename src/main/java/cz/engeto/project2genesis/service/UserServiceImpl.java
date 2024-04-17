@@ -25,7 +25,7 @@ import java.util.UUID;
 @Service
 public class UserServiceImpl implements UserService {
     private final JdbcTemplate jdbcTemplate;
-    private Settings settings;
+    private final Settings settings;
 
     @Autowired
     public UserServiceImpl(JdbcTemplate jdbcTemplate, Settings settings) {
@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
             ps.setString(4, uuid.toString());
             return ps;
         }, keyHolder);
-        user.setId(keyHolder.getKey().longValue());  // Set the generated ID to the user object
+        user.setId(keyHolder.getKey().longValue());
         return user;
     }
 
@@ -121,7 +121,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(Long id, User user) {
+    public User updateUser(User user) {
+        Long id = user.getId();
         if (!idExists(id)) {
             throw new UserException("User not found with id: " + id, HttpStatus.NOT_FOUND);
         }
