@@ -12,6 +12,7 @@ This JAVA code represents registration system with REST API.
   - Export from DBeaver (MySQL) database
   - Export from Postman with REST requests 
   - Log file
+  - Simple Frontend (HTML, CSS, JS)
 
 >**Tools and frameworks used:**
   - Maven
@@ -29,4 +30,7 @@ This JAVA code represents registration system with REST API.
 >- ***Log***
 >    - Log is outputted to console and to file as well
 >    - Log file will be located in project-2-genesis/logs folder
+>- ***Frontend***
+>    - Frontend files are located in src/main/resources/static folder
+>    - to run frontend open index.html in browser at localhost:8080
 
