@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration system</title>
+    <style>
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+        }
+        .form-group {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .form-group label {
+            flex-basis: 5%;
+            text-align: left;
+            margin-right: 5px;
+        }
+        .form-group input[type="text"], .form-group input[type="number"] {
+            flex-grow: 1;
+            max-width: 300px;
+        }
+        .form-group input[type="checkbox"] {
+            margin-left: 5px;
+            width: auto;
+        }
+        .form-group button {
+            width: 100px;
+            margin-left: 10px;
+        }
+        .output {
+            margin-top: 10px;
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 10px;
+            min-height: 50px;
+        }
+    </style>
+
+</head>
+<body onload="resetForm()">
+<h1>User Management</h1>
+
+
+<h3>Create User</h3>
+<div class="form-group">
+    <label>Name:</label>
+    <input type="text" id="name">
+</div>
+<div class="form-group">
+    <label>Surname:</label>
+    <input type="text" id="surname">
+</div>
+<div class="form-group">
+    <label>Person ID:</label>
+    <input type="text" id="personID">
+</div>
+<button onclick="createUser()">Create User</button>
+<div id="createUserOutput" class="output"></div>
+
+
+<h3>Get User by ID</h3>
+<div class="form-group">
+    <label>User ID:</label>
+    <input type="number" id="userId">
+</div>
+<div class="form-group">
+    <label>With Details:</label>
+    <input type="checkbox" id="userDetails">
+</div>
+<button onclick="getUser()">Get User</button>
+<div id="userData" class="output"></div>
+
+
+<h3>Get All Users</h3>
+<div class="form-group">
+    <label>With Details:</label>
+    <input type="checkbox" id="allUsersDetails">
+</div>
+<button onclick="getAllUsers()">Get All Users</button>
+<div id="allUsersData" class="output"></div>
+
+
+<h3>Update User</h3>
+<div class="form-group">
+    <label>User ID:</label>
+    <input type="number" id="updateId">
+</div>
+<div class="form-group">
+    <label>Name:</label>
+    <input type="text" id="updateName">
+</div>
+<div class="form-group">
+    <label>Surname:</label>
+    <input type="text" id="updateSurname">
+</div>
+<button onclick="updateUser()">Update User</button>
+<div id="updateUserOutput" class="output"></div>
+
+
+<h3>Delete User</h3>
+<div class="form-group">
+    <label>User ID:</label>
+    <input type="number" id="deleteId">
+</div>
+    <button onclick="deleteUser()">Delete User</button>
+    <div id="deleteUserOutput" class="output"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
