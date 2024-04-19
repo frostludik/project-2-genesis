@@ -66,7 +66,10 @@ function getUser() {
     fetch(url)
     .then(response => {
         if (!response.ok) {
-            throw new Error(`HTTP status ${response.status}`);
+            return response.text()
+            .then(text => {
+                throw new Error(`HTTP status ${response.status}: ${text}`);
+            });
         }
         return response.json();
     })
@@ -77,6 +80,7 @@ function getUser() {
         document.getElementById('userData').innerText = 'Error: ' + error.message;
     });
 }
+
 
 
 function getAllUsers() {
