@@ -139,7 +139,7 @@ function updateUser() {
         return response.json();
     })
     .then(data => {
-        document.getElementById('updateUserOutput').innerText = JSON.stringify(data, null, 2);
+        document.getElementById('updateUserOutput').innerText = 'User updated successfully: ' + JSON.stringify(data, null, 2);
     })
     .catch(error => {
         document.getElementById('updateUserOutput').innerText = 'Error: ' + error.message;
